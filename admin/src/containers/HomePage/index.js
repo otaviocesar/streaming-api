@@ -91,7 +91,7 @@ const HomePage = () => {
             <Block style={{ paddingRight: 30, paddingBottom: 0 }}>
               <h2>Integrações Disponíveis:</h2>
               <P style={{ marginTop: 7, marginBottom: 0 }}>
-                Até o momento possuímos integrações com o Instagrm, Youtube e
+                Até o momento possuímos integrações com o Instagram, Youtube e
                 Twitter!
               </P>
               <ALink
