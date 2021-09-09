@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "publications",
+  "info": {
+    "name": "publication",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "subtitle": {
+      "type": "text",
+      "required": true,
+      "maxLength": 140
+    },
+    "post": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": true,
+      "pluginOptions": {}
+    },
+    "type": {
+      "model": "type",
+      "via": "publication"
+    },
+    "platforms": {
+      "collection": "platform",
+      "via": "publications",
+      "dominant": true
+    },
+    "category": {
+      "model": "category",
+      "via": "publication"
+    },
+    "admin_user": {
+      "plugin": "admin",
+      "model": "user"
+    }
+  }
+}
