@@ -77,16 +77,18 @@
    async create(ctx) {
     console.log("create");
     console.log("url: " + ctx.request.body.imageUrl);
+
    const paramsMedia = {
       access_token: ctx.headers.access_token,
       image_url: ctx.request.body.imageUrl,
       caption: ctx.request.body.caption
     };
 
-    console.log(paramsMedia);
+    //console.log(paramsMedia);
     
     const responseMedia = await instagramApi.post("media", { paramsMedia })
     console.log(responseMedia.status)
+    console.log(responseMedia.data)
 
     if (responseMedia.status == 200){
       const paramsPublish = {
@@ -94,13 +96,15 @@
         creation_id: responseMedia.data.id
       };
 
-      const responsePublish = await instagramApi.post("media_publish", { paramsMedia })
+      const responsePublish = await instagramApi.post("media_publish", { paramsPublish })
 
       console.log("saveInstagramPosts");
 
-      let entity;
-      entity = await strapi.services.post.create(ctx.request.body);
-      return sanitizeEntity(entity, { model: strapi.models.post });
+      //let entity;
+      //entity = await strapi.services.post.create(ctx.request.body);
+      //return sanitizeEntity(entity, { model: strapi.models.post });
+      console.log("Sucesso");
+      return "Sucesso!";
 
     } else {
       console.log("Erro");
