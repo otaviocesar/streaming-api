@@ -2,7 +2,8 @@
   "kind": "collectionType",
   "collectionName": "platforms",
   "info": {
-    "name": "platform"
+    "name": "platform",
+    "description": ""
   },
   "options": {
     "increments": true,
@@ -21,9 +22,9 @@
       "targetField": "name",
       "required": true
     },
-    "publications": {
-      "via": "platforms",
-      "collection": "publication"
+    "imageUrl": {
+      "type": "string",
+      "required": true
     }
   }
 }

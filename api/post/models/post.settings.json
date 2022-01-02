@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "posts",
+  "info": {
+    "name": "Post"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "platform": {
+      "model": "platform"
+    },
+    "idPost": {
+      "type": "string"
+    },
+    "caption": {
+      "type": "string"
+    },
+    "timeAgo": {
+      "type": "string"
+    },
+    "imageUrl": {
+      "type": "text"
+    },
+    "likes": {
+      "type": "integer"
+    },
+    "comments": {
+      "type": "integer"
+    }
+  }
+}

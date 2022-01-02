@@ -21,10 +21,6 @@
       "type": "uid",
       "targetField": "name",
       "required": true
-    },
-    "publication": {
-      "via": "type",
-      "model": "publication"
     }
   }
 }
