@@ -571,6 +571,9 @@
           "comments": {
             "type": "integer"
           },
+          "isOnInstagram": {
+            "type": "boolean"
+          },
           "published_at": {
             "type": "string",
             "format": "date-time"
@@ -599,6 +602,9 @@
           },
           "comments": {
             "type": "integer"
+          },
+          "isOnInstagram": {
+            "type": "boolean"
           },
           "published_at": {
             "type": "string",

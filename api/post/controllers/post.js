@@ -11,7 +11,9 @@
    baseURL: 'https://graph.facebook.com/v10.0/17841449244928730/'
  });
 
- //var strApi = 'http://10.0.2.2:1337';
+ const strApi = axios.create({
+  baseURL: env('STRAPI_URL', 'http://10.0.2.2:1337/')
+});
 
  const { sanitizeEntity } = require('strapi-utils');
 
@@ -28,7 +30,6 @@
      var posts = [];
 
     if(ctx.query.instagram == "true"){
-      //console.log(ctx.headers.access_token)
       const params = {
           access_token: ctx.headers.access_token,
           fields: "id,media_url,caption,timestamp,like_count,comments_count"
@@ -75,42 +76,36 @@
 
 
    async create(ctx) {
-    console.log("create");
-    console.log("url: " + ctx.request.body.imageUrl);
 
-   const paramsMedia = {
-      access_token: ctx.headers.access_token,
-      image_url: ctx.request.body.imageUrl,
-      caption: ctx.request.body.caption
-    };
+    ctx.request.body.isOnInstagram = false;
 
-    //console.log(paramsMedia);
-    
-    const responseMedia = await instagramApi.post("media", { paramsMedia })
-    console.log(responseMedia.status)
-    console.log(responseMedia.data)
+    try {
+      const paramsMedia = {
+        access_token: ctx.headers.access_token,
+        image_url: ctx.request.body.imageUrl,
+        caption: ctx.request.body.caption
+      };
+      
+      const responseMedia = await instagramApi.post("media", paramsMedia)
 
-    if (responseMedia.status == 200){
       const paramsPublish = {
         access_token: ctx.headers.access_token,
         creation_id: responseMedia.data.id
       };
 
-      const responsePublish = await instagramApi.post("media_publish", { paramsPublish })
-
-      console.log("saveInstagramPosts");
-
-      //let entity;
-      //entity = await strapi.services.post.create(ctx.request.body);
-      //return sanitizeEntity(entity, { model: strapi.models.post });
-      console.log("Sucesso");
-      return "Sucesso!";
-
-    } else {
-      console.log("Erro");
-      return "";
+      const responsePublish = await instagramApi.post("media_publish", paramsPublish)
+      ctx.request.body.idPost = responsePublish.data.id;
+      ctx.request.body.isOnInstagram = true;
+      
+      console.log("Publicado com sucesso!");
+    } catch (error) {
+      console.log(error);
+      console.log("Erro ao publicar!");
     }
+
+    let entity;
+    entity = await strapi.services.post.create(ctx.request.body);
+    return sanitizeEntity(entity, { model: strapi.models.post });
+
   },
-
-
  };
