@@ -11,8 +11,12 @@
    baseURL: 'https://graph.facebook.com/v10.0/17841449244928730/'
  });
 
- const strApi = axios.create({
+/*  const strApi = axios.create({
   baseURL: env('STRAPI_URL', 'http://10.0.2.2:1337/')
+}); */
+
+const strApi = axios.create({
+  baseURL: 'https://api-streaming-integration.herokuapp.com/'
 });
 
  const { sanitizeEntity } = require('strapi-utils');
