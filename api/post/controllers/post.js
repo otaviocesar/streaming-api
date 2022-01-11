@@ -1,4 +1,8 @@
 'use strict';
+const google = require('googleapis').google
+const youtube = google.youtube({ version: 'v3'})
+const OAuth2 = google.auth.OAuth2
+const got = require('got');
 
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#core-controllers)
@@ -82,26 +86,126 @@ const strApi = axios.create({
    async create(ctx) {
 
     ctx.request.body.isOnInstagram = false;
+    ctx.request.body.isOnYoutube = false;
 
     try {
-      const paramsMedia = {
-        access_token: ctx.headers.access_token,
-        image_url: ctx.request.body.imageUrl,
-        caption: ctx.request.body.caption
-      };
-      
-      const responseMedia = await instagramApi.post("media", paramsMedia)
 
-      const paramsPublish = {
-        access_token: ctx.headers.access_token,
-        creation_id: responseMedia.data.id
-      };
+      if(ctx.headers.youtube == "true" || ctx.headers.youtube == true){
 
-      const responsePublish = await instagramApi.post("media_publish", paramsPublish)
-      ctx.request.body.idPost = responsePublish.data.id;
-      ctx.request.body.isOnInstagram = true;
+        console.log("Upload On Youtube")
+        const videoFileSize = Number(ctx.request.body.videoFileSize)
+        const videoUrl = ctx.request.body.imageUrl
+        videoUpload(videoUrl, videoFileSize);
+
+        ctx.request.body.isOnYoutube = true;
+        async function videoUpload(videoUrl, videoFileSize) {
+          try {
+                
+            const OAuthClient = await createOAuthClient()
       
-      console.log("Publicado com sucesso!");
+            async function createOAuthClient() {
+              const client_id_firebase = ctx.headers.client_id_firebase; 
+              const client_secret_firebase = ctx.headers.client_secret_firebase;
+          
+              const OAuthClient = new OAuth2(
+                client_id_firebase,
+                client_secret_firebase
+              )
+          
+              return OAuthClient
+            }
+        
+            var tokens = { 
+              access_token: ctx.headers.access_token_youtube,
+              scope: "https://www.googleapis.com/auth/youtube",
+              token_type:"Bearer"
+            };
+        
+            OAuthClient.setCredentials(tokens);
+        
+            await setGlobalGoogleAuthentication(OAuthClient);
+            
+            function setGlobalGoogleAuthentication(OAuthClient) {
+              google.options({
+                auth: OAuthClient
+              })
+            }
+    
+            const content = {
+              title: ctx.request.body.caption,
+              sentences: [
+                {
+                    text: "Olá esse é um video de Teste usando a api do Youtube!", 
+                    keywords: "api do yutube, upload de video",
+                }
+              ]
+            }
+ 
+            const videoTitle = `${content.title}`
+            const videoTags = [content.sentences[0].keywords]
+            const videoDescription = content.sentences.map((sentence) => {
+              return sentence.text
+            }).join('\n\n')
+        
+            const requestParameters = {
+              part: 'snippet, status',
+              requestBody: {
+                snippet: {
+                  title: videoTitle,
+                  description: videoDescription,
+                  tags: videoTags
+                },
+                status: {
+                  privacyStatus: 'unlisted'
+                }
+              },
+              media: { 
+                body: got.stream(videoUrl) 
+              }
+            }
+        
+            console.log('> [youtube-api] Starting to upload the video to YouTube')
+            const youtubeResponse = await youtube.videos.insert(requestParameters, {
+              onUploadProgress: onUploadProgress
+            })
+    
+            console.log(`> [youtube-api] Video available at: https://youtu.be/${youtubeResponse.data.id}`)
+            return youtubeResponse.data
+            
+            function onUploadProgress(event) {
+              const progress = Math.round( (event.bytesRead / videoFileSize) * 100 )
+              console.log(`> [youtube-api] ${progress}% completed`)
+            }
+    
+          } catch (error) {
+            console.log(error);
+            console.log("Erro ao publicar!");
+          }
+        }
+
+        console.log("Publicado com sucesso no Youtube!");
+      } 
+
+      if(ctx.headers.instagram == "true" || ctx.headers.instagram == true){
+        const paramsMedia = {
+          access_token: ctx.headers.access_token,
+          image_url: ctx.request.body.imageUrl,
+          caption: ctx.request.body.caption
+        };
+        
+        const responseMedia = await instagramApi.post("media", paramsMedia)
+  
+        const paramsPublish = {
+          access_token: ctx.headers.access_token,
+          creation_id: responseMedia.data.id
+        };
+  
+        const responsePublish = await instagramApi.post("media_publish", paramsPublish)
+        ctx.request.body.idPost = responsePublish.data.id;
+        ctx.request.body.isOnInstagram = true;
+        console.log("Publicado com sucesso no Instagram!");
+      }  
+
     } catch (error) {
       console.log(error);
       console.log("Erro ao publicar!");
