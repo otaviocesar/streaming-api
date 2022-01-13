@@ -156,7 +156,7 @@ const strApi = axios.create({
                   tags: videoTags
                 },
                 status: {
-                  privacyStatus: 'unlisted'
+                  privacyStatus: 'public'
                 }
               },
               media: { 

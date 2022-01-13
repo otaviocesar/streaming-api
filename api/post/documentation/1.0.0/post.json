@@ -574,6 +574,9 @@
           "isOnInstagram": {
             "type": "boolean"
           },
+          "isOnYoutube": {
+            "type": "boolean"
+          },
           "published_at": {
             "type": "string",
             "format": "date-time"
@@ -604,6 +607,9 @@
             "type": "integer"
           },
           "isOnInstagram": {
+            "type": "boolean"
+          },
+          "isOnYoutube": {
             "type": "boolean"
           },
           "published_at": {
