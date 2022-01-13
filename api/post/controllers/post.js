@@ -187,15 +187,36 @@ const strApi = axios.create({
       } 
 
       if(ctx.headers.instagram == "true" || ctx.headers.instagram == true){
+        console.log("Upload On Instagram")
         if(ctx.headers.video == "true" || ctx.headers.video == true){
-          console.log("Publicão de video ainda não implementada no Instagram!");
+
+          const paramsMediaVideo = {
+            media_type: "VIDEO",
+            access_token: ctx.headers.access_token,
+            video_url: ctx.request.body.imageUrl,
+            caption: ctx.request.body.caption
+          };
+
+          const responseMediaVideo = await instagramApi.post("media", paramsMediaVideo)
+    
+          const paramsPublishVideo = {
+            access_token: ctx.headers.access_token,
+            creation_id: responseMediaVideo.data.id
+          };
+    
+          const responsePublishVideo = await instagramApi.post("media_publish", paramsPublishVideo)
+          ctx.request.body.idPost = responsePublishVideo.data.id;
+          ctx.request.body.isOnInstagram = true;
+          console.log("Video Publicado com sucesso no Instagram!");
+
         }else {
+
           const paramsMedia = {
             access_token: ctx.headers.access_token,
             image_url: ctx.request.body.imageUrl,
             caption: ctx.request.body.caption
           };
-          
+
           const responseMedia = await instagramApi.post("media", paramsMedia)
     
           const paramsPublish = {
@@ -206,7 +227,7 @@ const strApi = axios.create({
           const responsePublish = await instagramApi.post("media_publish", paramsPublish)
           ctx.request.body.idPost = responsePublish.data.id;
           ctx.request.body.isOnInstagram = true;
-          console.log("Publicado com sucesso no Instagram!");
+          console.log("Imagem Publicada com sucesso no Instagram!");
         }
       }  
 
