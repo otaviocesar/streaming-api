@@ -199,14 +199,39 @@ const strApi = axios.create({
 
           const responseMediaVideo = await instagramApi.post("media", paramsMediaVideo)
     
-          const paramsPublishVideo = {
+          var paramsPublishVideo = {
             access_token: ctx.headers.access_token,
             creation_id: responseMediaVideo.data.id
           };
-    
-          const responsePublishVideo = await instagramApi.post("media_publish", paramsPublishVideo)
-          ctx.request.body.idPost = responsePublishVideo.data.id;
-          ctx.request.body.isOnInstagram = true;
+          
+          var contador = 0;  
+          tryUploadVideo(paramsPublishVideo);
+          async function tryUploadVideo(paramsPublishVideo) {
+            console.log("Esperando video subir....")
+            let time = await resolveAfter5Seconds(30000);
+            let responsePublishVideo = await instagramApi.post("media_publish", paramsPublishVideo)
+
+            if (responsePublishVideo.status == 200) {
+              ctx.request.body.idPost = responsePublishVideo.data.id;
+              ctx.request.body.isOnInstagram = true;
+            } else {
+              if(contador <25){
+                tryUploadVideo(paramsPublishVideo);
+                contador = contador + 5;
+                console.log("Aguardando mais um pouco....")
+              } else {
+                console.log("Video demorou demais para subir....")
+              }
+            }
+          }
+
+          function resolveAfter5Seconds(x) {
+            return new Promise(resolve => {
+              setTimeout(() => {
+                resolve(x);
+              }, 30000);
+            });
+          }
           console.log("Video Publicado com sucesso no Instagram!");
 
         } else {
