@@ -209,7 +209,7 @@ const strApi = axios.create({
           ctx.request.body.isOnInstagram = true;
           console.log("Video Publicado com sucesso no Instagram!");
 
-        }else {
+        } else {
 
           const paramsMedia = {
             access_token: ctx.headers.access_token,
