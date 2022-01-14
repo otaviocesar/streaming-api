@@ -230,14 +230,14 @@ const strApi = axios.create({
             creation_id: responseMediaVideo.data.id
           };
           
-          //var contador = 0;  
+          var contador = 0;  
           tryUploadVideo(paramsPublishVideo);
           async function tryUploadVideo(paramsPublishVideo) {
             console.log("Esperando video subir....")
             let time = await resolveAfter5Seconds(30000);
             var responsePublishVideo = await instagramApi.post("media_publish", paramsPublishVideo)
 
-/*             if (responsePublishVideo.status == 200) {
+            if (responsePublishVideo.status == 200) {
               console.log("Sucesso!....")
             } else {
               if(contador <25){
@@ -247,7 +247,7 @@ const strApi = axios.create({
               } else {
                 console.log("Video demorou demais para subir....")
               }
-            } */
+            }
           }
 
           function resolveAfter5Seconds(x) {
