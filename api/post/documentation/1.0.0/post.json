@@ -577,6 +577,9 @@
           "isOnYoutube": {
             "type": "boolean"
           },
+          "isVideo": {
+            "type": "boolean"
+          },
           "published_at": {
             "type": "string",
             "format": "date-time"
@@ -610,6 +613,9 @@
             "type": "boolean"
           },
           "isOnYoutube": {
+            "type": "boolean"
+          },
+          "isVideo": {
             "type": "boolean"
           },
           "published_at": {

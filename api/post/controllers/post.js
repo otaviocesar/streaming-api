@@ -48,6 +48,10 @@ const strApi = axios.create({
       if (responsePosts.data.data && responsePosts.data.data.length > 0) {
           for (let p = 0; p < responsePosts.data.data.length; p++) {
               let postsAll = responsePosts.data.data[p];
+              let isVideo = false;
+
+             let mediaUrl = postsAll.media_url;
+             isVideo = mediaUrl.includes(".mp4");
               
               posts.push({
                 platform: {
@@ -61,6 +65,7 @@ const strApi = axios.create({
                 imageUrl: postsAll.media_url,
                 likes: postsAll.like_count,
                 comments: postsAll.comments_count,
+                isVideo: isVideo,
                 user: {
                   name: 'Streaming Api',
                   imageUrl: 'https://avatars.githubusercontent.com/u/38116117?v=4'

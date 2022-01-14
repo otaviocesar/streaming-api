@@ -38,6 +38,9 @@
     },
     "isOnYoutube": {
       "type": "boolean"
+    },
+    "isVideo": {
+      "type": "boolean"
     }
   }
 }
