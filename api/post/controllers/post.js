@@ -12,7 +12,7 @@ const got = require('got');
  const { default: axios } = require('axios');
 
  const instagramApi = axios.create({
-   baseURL: 'https://graph.facebook.com/v10.0/17841449244928730/'
+   baseURL: 'https://graph.facebook.com/v10.0/'
  });
 
 /*  const strApi = axios.create({
@@ -38,12 +38,26 @@ const strApi = axios.create({
      var posts = [];
 
     if(ctx.query.instagram == "true"){
+      let accessToken = ctx.headers.access_token;
+      let urlFacebookPage = "me/accounts?access_token=" + accessToken;
+      let getFacebookPage = await instagramApi.get(urlFacebookPage)
+
+      const facebookPage = getFacebookPage.data.data[0].id 
+      console.log(facebookPage)
+
+      let urlInstagramPage = String(facebookPage) + "?access_token=" + accessToken + "&fields=instagram_business_account";
+      let getInstagramPage = await instagramApi.get(urlInstagramPage)
+      let instagramPage = getInstagramPage.data.instagram_business_account.id 
+      console.log(instagramPage)
+    
       const params = {
-          access_token: ctx.headers.access_token,
-          fields: "id,media_url,caption,timestamp,like_count,comments_count"
+        access_token: ctx.headers.access_token,
+        fields: "id,media_url,caption,timestamp,like_count,comments_count"
       };
+
+      let urlMedia = instagramPage + "/media";
         
-      const responsePosts = await instagramApi.get("media", { params })
+      const responsePosts = await instagramApi.get(urlMedia , { params })
 
       if (responsePosts.data.data && responsePosts.data.data.length > 0) {
           for (let p = 0; p < responsePosts.data.data.length; p++) {
@@ -57,7 +71,7 @@ const strApi = axios.create({
                 platform: {
                   name: 'Instagram',
                   imageUrl:
-                      'https://raw.githubusercontent.com/otaviocesar/streaming-app/main/lib/data/instagram-icon.png'
+                      'https://streaming-api-assets.s3.sa-east-1.amazonaws.com/instagram_icon_f5ad8ab0a2.png'
                 },
                 idPost: postsAll.id,
                 caption: postsAll.caption,
@@ -68,7 +82,7 @@ const strApi = axios.create({
                 isVideo: isVideo,
                 user: {
                   name: 'Streaming Api',
-                  imageUrl: 'https://avatars.githubusercontent.com/u/38116117?v=4'
+                  imageUrl: ''
                 }
               });
           }
@@ -97,6 +111,22 @@ const strApi = axios.create({
 
       if(ctx.headers.instagram == "true" || ctx.headers.instagram == true){
         console.log("Upload On Instagram")
+
+        let accessToken = ctx.headers.access_token;
+        let urlFacebookPage = "me/accounts?access_token=" + accessToken;
+        let getFacebookPage = await instagramApi.get(urlFacebookPage)
+  
+        const facebookPage = getFacebookPage.data.data[0].id 
+        console.log(facebookPage)
+  
+        let urlInstagramPage = String(facebookPage) + "?access_token=" + accessToken + "&fields=instagram_business_account";
+        let getInstagramPage = await instagramApi.get(urlInstagramPage)
+        let instagramPage = getInstagramPage.data.instagram_business_account.id 
+        console.log(instagramPage)
+  
+        var urlMedia = instagramPage + "/media";
+        var urlMediaPublish = instagramPage + "/media_publish";
+
         if(ctx.headers.video == "true" || ctx.headers.video == true){
 
           const paramsMediaVideo = {
@@ -106,7 +136,7 @@ const strApi = axios.create({
             caption: ctx.request.body.caption
           };
 
-          var responseMediaVideo = await instagramApi.post("media", paramsMediaVideo)
+          var responseMediaVideo = await instagramApi.post(urlMedia, paramsMediaVideo)
 
         } else {
 
@@ -116,14 +146,14 @@ const strApi = axios.create({
             caption: ctx.request.body.caption
           };
 
-          const responseMedia = await instagramApi.post("media", paramsMedia)
+          const responseMedia = await instagramApi.post(urlMedia, paramsMedia)
     
           const paramsPublish = {
             access_token: ctx.headers.access_token,
             creation_id: responseMedia.data.id
           };
     
-          const responsePublish = await instagramApi.post("media_publish", paramsPublish)
+          const responsePublish = await instagramApi.post(urlMediaPublish, paramsPublish)
           ctx.request.body.idPost = responsePublish.data.id;
           ctx.request.body.isOnInstagram = true;
           console.log("Imagem Publicada com sucesso no Instagram!");
@@ -240,7 +270,7 @@ const strApi = axios.create({
           async function tryUploadVideo(paramsPublishVideo) {
             console.log("Esperando video subir....")
             let time = await resolveAfter5Seconds(30000);
-            var responsePublishVideo = await instagramApi.post("media_publish", paramsPublishVideo)
+            var responsePublishVideo = await instagramApi.post(urlMediaPublish, paramsPublishVideo)
 
             if (responsePublishVideo.status == 200) {
               console.log("Sucesso!....")
