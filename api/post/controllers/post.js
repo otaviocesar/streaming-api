@@ -271,6 +271,8 @@ const strApi = axios.create({
             console.log("Esperando video subir....")
             let time = await resolveAfter5Seconds(30000);
             var responsePublishVideo = await instagramApi.post(urlMediaPublish, paramsPublishVideo)
+            console.log("Video Publicado com sucesso no Instagram!");
+            ctx.request.body.isOnInstagram = true;
 
             if (responsePublishVideo.status == 200) {
               console.log("Sucesso!....")
@@ -292,10 +294,6 @@ const strApi = axios.create({
               }, 30000);
             });
           }
-          console.log("Video Publicado com sucesso no Instagram!");
-          ctx.request.body.idPost = responsePublishVideo.data.id;
-          ctx.request.body.isOnInstagram = true;
-
         }
       }  
 
