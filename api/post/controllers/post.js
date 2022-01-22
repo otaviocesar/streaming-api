@@ -161,8 +161,8 @@ const strApi = axios.create({
                 caption: postsYoutube.snippet.title,
                 timeAgo: postsYoutube.snippet.publishedAt,
                 imageUrl: imageUrl,
-                likes: "",
-                comments: "",
+                likes: 0,
+                comments: 0,
                 isVideo: true,
                 user: {
                   name: 'Streaming Api',
