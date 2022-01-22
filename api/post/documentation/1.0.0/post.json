@@ -580,6 +580,9 @@
           "isVideo": {
             "type": "boolean"
           },
+          "isOnTwitter": {
+            "type": "boolean"
+          },
           "published_at": {
             "type": "string",
             "format": "date-time"
@@ -616,6 +619,9 @@
             "type": "boolean"
           },
           "isVideo": {
+            "type": "boolean"
+          },
+          "isOnTwitter": {
             "type": "boolean"
           },
           "published_at": {

@@ -3,6 +3,8 @@ const google = require('googleapis').google
 const youtube = google.youtube({ version: 'v3'})
 const OAuth2 = google.auth.OAuth2
 const got = require('got');
+const OAuth = require('oauth-1.0a');
+const crypto = require('crypto');
 
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#core-controllers)
@@ -37,7 +39,7 @@ const strApi = axios.create({
      let entities;
      var posts = [];
 
-    if(ctx.query.instagram == "true"){
+    if(ctx.query.instagram == "true" || ctx.query.instagram == true){
       let accessToken = ctx.headers.access_token;
       let urlFacebookPage = "me/accounts?access_token=" + accessToken;
       let getFacebookPage = await instagramApi.get(urlFacebookPage)
@@ -90,6 +92,51 @@ const strApi = axios.create({
           console.log("Nenhum post encontrado no Instagram.")
       }
     }
+
+      if(ctx.query.twitter == "true" || ctx.query.twitter == true){
+        console.log("Consulta no Twitter")
+        let accessTokenTwitter = "Bearer " + ctx.headers.access_token_twitter;
+
+        const twitterApiGET = axios.create({
+          baseURL: 'https://api.twitter.com/2/',
+          headers: {Authorization: accessTokenTwitter}
+        });
+    
+        let paramsTwitter = "?expansions=in_reply_to_user_id%2Creferenced_tweets.id.author_id%2Centities.mentions.username%2Creferenced_tweets.id%2Cgeo.place_id%2Cattachments.media_keys&tweet.fields=public_metrics,created_at&media.fields=url%2Calt_text%2Cnon_public_metrics%2Corganic_metrics%2Cpromoted_metrics%2Cwidth%2Ctype%2Cmedia_key%2Cpreview_image_url%2Cheight%2Cduration_ms%2Cpublic_metrics";
+    
+        let urlMediaTwitter = "users/1484314058472173568/tweets" + paramsTwitter;
+          
+        const responsePostsTwitter = await twitterApiGET.get(urlMediaTwitter)
+
+        if (responsePostsTwitter.data.data && responsePostsTwitter.data.data.length > 0) {
+          for (let p = 0; p < responsePostsTwitter.data.data.length; p++) {
+              let postsAll = responsePostsTwitter.data.data[p];
+              let isVideo = false;
+              
+              posts.push({
+                platform: {
+                  name: 'Twitter',
+                  imageUrl:
+                      'https://streaming-api-assets.s3.sa-east-1.amazonaws.com/twitter_icon_edcfdc0f0a.png'
+                },
+                idPost: postsAll.id,
+                caption: postsAll.text,
+                timeAgo: postsAll.created_at,
+                imageUrl: "",
+                likes: postsAll.public_metrics.like_count,
+                comments: postsAll.public_metrics.reply_count,
+                isVideo: isVideo,
+                user: {
+                  name: 'Streaming Api',
+                  imageUrl: ''
+                }
+              });
+          }
+      } else {
+          console.log("Nenhum post encontrado no Twitter.")
+      }
+
+      }
 /*      if (ctx.query._q) {
        entities = await strapi.services.post.search(ctx.query);
      } else {
@@ -106,6 +153,7 @@ const strApi = axios.create({
 
     ctx.request.body.isOnInstagram = false;
     ctx.request.body.isOnYoutube = false;
+    ctx.request.body.isOnTwitter = false;
 
     try {
 
@@ -296,6 +344,49 @@ const strApi = axios.create({
           }
         }
       }  
+
+      if(ctx.headers.twitter == "true" || ctx.headers.twitter == true){
+        console.log("Upload On Twitter")
+
+        const oauth = OAuth({
+          consumer: {
+            key: ctx.headers.twitter_consumer_key, 
+            secret: ctx.headers.twitter_consumer_secret, 
+          },
+          signature_method: 'HMAC-SHA1',
+          hash_function: (baseString, key) => crypto.createHmac('sha1', key).update(baseString).digest('base64')
+        });
+  
+        const endpointURL = `https://api.twitter.com/2/tweets`;
+  
+        const token = {
+          key: ctx.headers.twitter_token_key,
+          secret: ctx.headers.twitter_token_secret
+        };
+      
+        const authHeader = oauth.toHeader(oauth.authorize({
+          url: endpointURL,
+          method: 'POST'
+        }, token));
+  
+        console.log(authHeader);
+  
+        const twitterApi = axios.create({
+          baseURL: 'https://api.twitter.com/2/',
+          headers: authHeader
+        });
+  
+        let text = ctx.request.body.caption + " " + ctx.request.body.imageUrl;
+
+        const tweet = {
+          "text":text
+        };
+  
+        var responsePublishTweet = await twitterApi.post("tweets", tweet)
+        console.log(responsePublishTweet);  
+        ctx.request.body.isOnTwitter = true;
+
+      }
 
     } catch (error) {
       console.log(error);

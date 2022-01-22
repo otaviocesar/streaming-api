@@ -11,8 +11,10 @@
   },
   "devDependencies": {},
   "dependencies": {
+    "crypto": "^1.0.1",
     "googleapis": "^92.0.0",
     "knex": "0.21.18",
+    "oauth-1.0a": "^2.2.6",
     "pg": "8.5.1",
     "strapi": "3.6.8",
     "strapi-admin": "3.6.8",
@@ -28,7 +30,9 @@
     "strapi-plugin-upload": "3.6.8",
     "strapi-plugin-users-permissions": "3.6.8",
     "strapi-provider-upload-aws-s3": "^3.6.8",
-    "strapi-utils": "3.6.8"
+    "strapi-utils": "3.6.8",
+    "twitter": "^1.7.1",
+    "twitter-api-v2": "^1.9.1"
   },
   "author": {
     "name": "A Strapi developer"
