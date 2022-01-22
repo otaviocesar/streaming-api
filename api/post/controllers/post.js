@@ -39,7 +39,7 @@ const strApi = axios.create({
      let entities;
      var posts = [];
 
-    if(ctx.query.instagram == "true" || ctx.query.instagram == true){
+    if(ctx.headers.access_token && (ctx.query.instagram == "true" || ctx.query.instagram == true)){
       let accessToken = ctx.headers.access_token;
       let urlFacebookPage = "me/accounts?access_token=" + accessToken;
       let getFacebookPage = await instagramApi.get(urlFacebookPage)
@@ -93,7 +93,7 @@ const strApi = axios.create({
       }
     }
 
-    if(ctx.query.youtube == "true" || ctx.query.youtube == true){
+    if(ctx.headers.access_token_youtube && (ctx.query.youtube == "true" || ctx.query.youtube == true)){
         console.log("Consulta no Youtube") 
         const OAuthClientList = await createOAuthClientList()
   
@@ -178,7 +178,7 @@ const strApi = axios.create({
         }
     }
 
-    if(ctx.query.twitter == "true" || ctx.query.twitter == true){
+    if(ctx.headers.access_token_twitter && (ctx.query.twitter == "true" || ctx.query.twitter == true)){
       console.log("Consulta no Twitter")
       let accessTokenTwitter = "Bearer " + ctx.headers.access_token_twitter;
 
