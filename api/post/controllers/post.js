@@ -93,50 +93,136 @@ const strApi = axios.create({
       }
     }
 
-      if(ctx.query.twitter == "true" || ctx.query.twitter == true){
-        console.log("Consulta no Twitter")
-        let accessTokenTwitter = "Bearer " + ctx.headers.access_token_twitter;
-
-        const twitterApiGET = axios.create({
-          baseURL: 'https://api.twitter.com/2/',
-          headers: {Authorization: accessTokenTwitter}
-        });
+    if(ctx.query.youtube == "true" || ctx.query.youtube == true){
+        console.log("Consulta no Youtube") 
+        const OAuthClientList = await createOAuthClientList()
+  
+        async function createOAuthClientList() {
+          const client_id_firebase = ctx.headers.client_id_firebase; 
+          const client_secret_firebase = ctx.headers.client_secret_firebase;
+      
+          const OAuthClientList = new OAuth2(
+            client_id_firebase,
+            client_secret_firebase
+          )
+      
+          return OAuthClientList
+        }
     
-        let paramsTwitter = "?expansions=in_reply_to_user_id%2Creferenced_tweets.id.author_id%2Centities.mentions.username%2Creferenced_tweets.id%2Cgeo.place_id%2Cattachments.media_keys&tweet.fields=public_metrics,created_at&media.fields=url%2Calt_text%2Cnon_public_metrics%2Corganic_metrics%2Cpromoted_metrics%2Cwidth%2Ctype%2Cmedia_key%2Cpreview_image_url%2Cheight%2Cduration_ms%2Cpublic_metrics";
+        var tokens = { 
+          access_token: ctx.headers.access_token_youtube,
+          scope: "https://www.googleapis.com/auth/youtube",
+          token_type:"Bearer"
+        };
     
-        let urlMediaTwitter = "users/1484314058472173568/tweets" + paramsTwitter;
-          
-        const responsePostsTwitter = await twitterApiGET.get(urlMediaTwitter)
+        OAuthClientList.setCredentials(tokens);
+    
+        await setGlobalGoogleAuthentication(OAuthClientList);
+        
+        function setGlobalGoogleAuthentication(OAuthClientList) {
+          google.options({
+            auth: OAuthClientList
+          })
+        }
+    
+        const youtubeResponseList = await youtube.channels.list({
+          part: 'snippet,contentDetails,statistics',
+          'mine': "true",
+        })
+        
+        var playlistId = youtubeResponseList.data?.items[0]?.contentDetails?.relatedPlaylists?.uploads;
+        console.log(playlistId);
 
-        if (responsePostsTwitter.data.data && responsePostsTwitter.data.data.length > 0) {
-          for (let p = 0; p < responsePostsTwitter.data.data.length; p++) {
-              let postsAll = responsePostsTwitter.data.data[p];
-              let isVideo = false;
-              
+        var nextPageToken = null
+        var page = 1
+        
+        while (page == 1 || nextPageToken) {
+          var resPlaylistItems = await youtube.playlistItems.list({
+            part: 'id,snippet,contentDetails',
+            playlistId: playlistId,
+            pageToken: nextPageToken,
+            maxResults: 20,
+          });
+  
+          nextPageToken = resPlaylistItems.data.nextPageToken
+          console.log(resPlaylistItems.data.items.length)
+
+          if (resPlaylistItems.data.items && resPlaylistItems.data.items.length > 0) {
+            for (let v = 0; v < resPlaylistItems.data.items.length; v++) {
+              let postsYoutube = resPlaylistItems.data.items[v];
+              let imageUrl = `https://www.youtube.com/watch?v=${postsYoutube.contentDetails.videoId}`;
               posts.push({
                 platform: {
-                  name: 'Twitter',
+                  name: 'Youtube',
                   imageUrl:
-                      'https://streaming-api-assets.s3.sa-east-1.amazonaws.com/twitter_icon_edcfdc0f0a.png'
+                      'https://streaming-api-assets.s3.sa-east-1.amazonaws.com/youtube_icon_7d402d106b.png'
                 },
-                idPost: postsAll.id,
-                caption: postsAll.text,
-                timeAgo: postsAll.created_at,
-                imageUrl: "",
-                likes: postsAll.public_metrics.like_count,
-                comments: postsAll.public_metrics.reply_count,
-                isVideo: isVideo,
+                idPost: "",
+                caption: postsYoutube.snippet.title,
+                timeAgo: postsYoutube.snippet.publishedAt,
+                imageUrl: imageUrl,
+                likes: "",
+                comments: "",
+                isVideo: true,
                 user: {
                   name: 'Streaming Api',
                   imageUrl: ''
                 }
               });
+              console.log(posts)
+            }
+          } else {
+            console.log("Nenhum post encontrado no Youtube.")
           }
+          page += 1
+        }
+    }
+
+    if(ctx.query.twitter == "true" || ctx.query.twitter == true){
+      console.log("Consulta no Twitter")
+      let accessTokenTwitter = "Bearer " + ctx.headers.access_token_twitter;
+
+      const twitterApiGET = axios.create({
+        baseURL: 'https://api.twitter.com/2/',
+        headers: {Authorization: accessTokenTwitter}
+      });
+  
+      let paramsTwitter = "?expansions=in_reply_to_user_id%2Creferenced_tweets.id.author_id%2Centities.mentions.username%2Creferenced_tweets.id%2Cgeo.place_id%2Cattachments.media_keys&tweet.fields=public_metrics,created_at&media.fields=url%2Calt_text%2Cnon_public_metrics%2Corganic_metrics%2Cpromoted_metrics%2Cwidth%2Ctype%2Cmedia_key%2Cpreview_image_url%2Cheight%2Cduration_ms%2Cpublic_metrics";
+  
+      let urlMediaTwitter = "users/1484314058472173568/tweets" + paramsTwitter;
+        
+      const responsePostsTwitter = await twitterApiGET.get(urlMediaTwitter)
+
+      if (responsePostsTwitter.data.data && responsePostsTwitter.data.data.length > 0) {
+        for (let p = 0; p < responsePostsTwitter.data.data.length; p++) {
+            let postsAll = responsePostsTwitter.data.data[p];
+            let isVideo = false;
+            
+            posts.push({
+              platform: {
+                name: 'Twitter',
+                imageUrl:
+                    'https://streaming-api-assets.s3.sa-east-1.amazonaws.com/twitter_icon_edcfdc0f0a.png'
+              },
+              idPost: postsAll.id,
+              caption: postsAll.text,
+              timeAgo: postsAll.created_at,
+              imageUrl: "",
+              likes: postsAll.public_metrics.like_count,
+              comments: postsAll.public_metrics.reply_count,
+              isVideo: isVideo,
+              user: {
+                name: 'Streaming Api',
+                imageUrl: ''
+              }
+            });
+        }
       } else {
           console.log("Nenhum post encontrado no Twitter.")
       }
 
-      }
+    }
+      
 /*      if (ctx.query._q) {
        entities = await strapi.services.post.search(ctx.query);
      } else {
